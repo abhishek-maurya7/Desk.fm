@@ -16,18 +16,19 @@ export default function LoginForm() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
 
     try {
       const result = await signIn("credentials", {
@@ -37,37 +38,50 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        throw new Error(result.error);
+        setError("Invalid email or password");
+        return;
       }
 
-      console.log("success");
-
       router.push("/dashboard");
-    } catch (error) {
-      console.log("🚀 ~ handleSubmit ~ error:", error);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <Form
-      className="flex flex-col gap-4 p-6 bg-slate-800 rounded-md w-full max-w-md mx-auto"
       onSubmit={handleSubmit}
       aria-label="Login form"
+      className="w-full mx-auto rounded-2xl border border-white/10 bg-linear-to-b from-[#1f2024] to-[#16171a] p-6 sm:p-8 shadow-xl flex flex-col gap-6
+      "
     >
+      <div className="flex flex-col gap-1 text-center">
+        <Typography variant="h4" className="text-white">
+          Welcome back
+        </Typography>
+        <Typography variant="bodySmall" className="text-white/60">
+          Sign in to your account
+        </Typography>
+      </div>
+
       <Input
         id="email"
         name="email"
         type="email"
         value={formData.email}
         onChange={handleChange}
-        placeholder="Enter your email..."
+        placeholder="you@example.com"
         label={
-          <Typography as="label" variant="bodySmall">
+          <Typography as="label" variant="bodySmall" className="text-white/80">
             Email
           </Typography>
         }
         required
         autoComplete="email"
+        className="border border-white/10 bg-[#0f1116] text-white placeholder:text-white/40 hover:border-white/20 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition
+        "
       />
 
       <Input
@@ -76,17 +90,31 @@ export default function LoginForm() {
         type="password"
         value={formData.password}
         onChange={handleChange}
-        placeholder="Enter your password..."
+        placeholder="••••••••"
         label={
-          <Typography as="label" variant="bodySmall">
+          <Typography as="label" variant="bodySmall" className="text-white/80">
             Password
           </Typography>
         }
         required
         autoComplete="current-password"
+        className="border border-white/10 bg-[#0f1116] text-white placeholder:text-white/40 hover:border-white/20 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition
+        "
       />
-      <Button type="submit">
-        <Typography>Login</Typography>
+
+      {error && (
+        <Typography variant="bodySmall" className="text-red-400 text-center">
+          {error}
+        </Typography>
+      )}
+
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={isLoading}
+        className="w-full"
+      >
+        <Typography>{isLoading ? "Signing in..." : "Login"}</Typography>
       </Button>
     </Form>
   );
