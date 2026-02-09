@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, Modal } from "@/components/atoms";
+import { Button, Input, Modal } from "@/components/atoms";
 import { Form } from "@/components/molecules";
+import CreateRoomForm from "@/components/organisms/createRoomForm";
 import { useState } from "react";
 
 export default function Dashboard() {
@@ -11,6 +12,10 @@ export default function Dashboard() {
 
   const closeModal = () => setIsModalOpen(false);
 
+  const handleCreateRoom = () => {
+      return 
+  }
+
   return (
     <main className="min-h-screen bg-slate-900 p-6">
       <div className="flex justify-end p-6">
@@ -19,12 +24,11 @@ export default function Dashboard() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={closeModal}
         className="bg-slate-900 p-4 rounded-lg"
       >
         {/* Header with close button */}
         <div className="flex justify-between items-center">
-          <h2 className="text-white text-lg">Modal Title</h2>
+          <h2 className="text-white text-lg">Create Room</h2>
           <button onClick={closeModal} className="text-white text-xl">
             &times; {/* Close button */}
           </button>
@@ -32,13 +36,10 @@ export default function Dashboard() {
 
         {/* Body content */}
         <div className="mt-4 text-white">
-
+          <CreateRoomForm />
         </div>
 
-        <div className="mt-4 flex justify-end space-x-4">
-          <Button variant="secondary" onClick={closeModal}>Close</Button>
-          <Button variant="primary">Create</Button>
-        </div>
+
       </Modal>
     </main>
   );

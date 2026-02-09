@@ -10,12 +10,10 @@ export default function CreateRoomForm() {
   const router = useRouter();
 
   const [roomName, setRoomName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -34,23 +32,17 @@ export default function CreateRoomForm() {
       const data = await res.json();
 
       router.push(`/rooms/${data.roomId}`);
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <Form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 bg-slate-800 p-6 rounded-md"
+      className="flex flex-col gap-4 rounded-md"
       aria-label="Create room form"
     >
-      <Typography as="h2" variant="h6" className="text-white">
-        Create a room
-      </Typography>
-
       <Input
         id="room-name"
         name="roomName"
@@ -71,9 +63,10 @@ export default function CreateRoomForm() {
         </Typography>
       )}
 
-      <Button type="submit" disabled={isLoading || !roomName.trim()}>
-        {isLoading ? "Creating..." : "Create Room"}
-      </Button>
+        <div className="mt-4 flex justify-end space-x-4">
+          <Button variant="secondary" type="button">Close</Button>
+          <Button variant="primary" type="submit">Create</Button>
+        </div>
     </Form>
   );
 }
