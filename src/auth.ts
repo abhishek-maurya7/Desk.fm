@@ -3,12 +3,12 @@ import NextAuth from "next-auth";
 import { ObjectId } from "mongodb";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import Credentials from "next-auth/providers/credentials";
+import  MongoClient  from "@/lib/mongodb/client";
 
-import clientPromise from "@/lib/mongodb";
 import type { LoginCredentials, User } from "@/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(MongoClient),
 
   session: {
     strategy: "jwt",
@@ -26,8 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email, password } = credentials as LoginCredentials;
         if (!email || !password) return null;
 
-        const client = await clientPromise;
-        const db = client.db();
+        const db = MongoClient.db();
 
         const user = await db
           .collection<User & { _id: ObjectId; password: string }>("users")
@@ -39,7 +38,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!isValid) return null;
 
         return {
-          id: user._id.toString(), // 👈 important
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
         };
@@ -61,5 +60,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+  },
+  
+  pages: {
+    signIn: "/login",
   },
 });

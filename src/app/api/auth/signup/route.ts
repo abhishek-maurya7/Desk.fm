@@ -1,6 +1,7 @@
-import clientPromise from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+
+import MongoClient from "@/lib/mongodb/client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,8 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db();
+    const db = MongoClient.db();
 
     const existingUser = await db.collection("users").findOne({ email });
     if (existingUser) {

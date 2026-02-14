@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
+import MongoClient from "@/lib/mongodb/client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db();
+    const db = MongoClient.db();
 
     const userId = new ObjectId(session.user.id);
 
