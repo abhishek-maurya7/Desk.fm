@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
-import MongoClient from "@/lib/mongodb/client";
+import MongoClient from "@/lib/server/mongodb/client";
 
-export const hasRoomAccess = async (roomId: string, userId: string) => {
+export const hasRoomAccess = async (roomId: ObjectId, userId: ObjectId) => {
   if (!roomId || !userId) {
     throw new Error("roomId and userId are required");
   }
@@ -9,12 +9,10 @@ export const hasRoomAccess = async (roomId: string, userId: string) => {
   try {
     const db = MongoClient.db();
 
-    const roomObjectId = new ObjectId(roomId);
-    const userObjectId = new ObjectId(userId);
 
     const result = await db.collection("roomMembers").findOne({
-      userId: userObjectId,
-      roomId: roomObjectId
+      userId: userId,
+      roomId: roomId
     });
 
     return !!result;

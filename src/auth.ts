@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import { ObjectId } from "mongodb";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import Credentials from "next-auth/providers/credentials";
-import  MongoClient  from "@/lib/mongodb/client";
+import  MongoClient  from "@/lib/server/mongodb/client";
 
 import type { LoginCredentials, User } from "@/types";
 

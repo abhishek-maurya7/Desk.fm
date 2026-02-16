@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 
-import MongoClient from "@/lib/mongodb/client";
+import MongoClient from "@/lib/server/mongodb/client";
 
 export async function POST(req: NextRequest) {
   try {

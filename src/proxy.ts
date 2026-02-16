@@ -3,10 +3,12 @@ import type { NextRequest } from "next/server";
 
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { getBaseUrl } from "./lib/server/helpers";
 
-function requireAuth(req: NextRequest & { auth: Session | null }) {
+async function requireAuth(req: NextRequest & { auth: Session | null }) {
   if (!req.auth?.user?.id) {
-    return NextResponse.redirect("/login");
+    const baseUrl = await getBaseUrl();
+    return NextResponse.redirect(`${baseUrl}/login`);
   }
 
   return NextResponse.next();
