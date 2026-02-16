@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[#0d0f13] px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center">
       <div className="w-full max-w-md">
         <LoginForm />
       </div>
