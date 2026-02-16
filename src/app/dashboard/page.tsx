@@ -1,6 +1,5 @@
-"use client";
-
-import { Button, Modal } from "@/components/atoms";
+import { Button } from "@/components/atoms";
+import { Modal } from "@/components/molecules";
 import CreateRoomForm from "@/components/organisms/createRoomForm";
 import { useState } from "react";
 
