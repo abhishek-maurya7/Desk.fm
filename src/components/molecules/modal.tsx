@@ -5,7 +5,7 @@ import {
 
 interface ModalProps extends HTMLProps<HTMLDivElement> {
   isOpen: boolean;
-  classname: string
+  className: string
   children: ReactNode;
 }
 
