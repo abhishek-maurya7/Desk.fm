@@ -55,18 +55,20 @@ export async function POST(req: NextRequest) {
     }
 
     const lastQueueItem = await db.collection("queue").findOne(
-      { roomId: roomObjectId },
+      { roomId: roomObjectId, status: "queued" },
       { sort: { position: -1 } }
     );
 
-    const nextPosition = lastQueueItem?.position
-      ? lastQueueItem.position + 1
-      : 1;
+    const nextPosition =
+      typeof lastQueueItem?.position === "number"
+        ? lastQueueItem.position + 1
+        : 1;
 
     await db.collection("queue").insertOne({
       roomId: roomObjectId,
       trackId: track._id,
       position: nextPosition,
+      status: "queued",
       addedBy: userObjectId,
       addedAt: new Date(),
     });
@@ -75,7 +77,6 @@ export async function POST(req: NextRequest) {
       trackId: track._id.toString(),
       ...track,
     });
-
   } catch {
     return NextResponse.json(
       { message: "Internal server error" },

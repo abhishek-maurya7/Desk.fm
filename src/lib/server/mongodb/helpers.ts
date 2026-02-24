@@ -9,7 +9,6 @@ export const hasRoomAccess = async (roomId: ObjectId, userId: ObjectId) => {
   try {
     const db = MongoClient.db();
 
-
     const result = await db.collection("roomMembers").findOne({
       userId: userId,
       roomId: roomId

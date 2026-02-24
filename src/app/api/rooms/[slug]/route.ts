@@ -53,14 +53,10 @@ export async function GET(
     }
 
     const [queue, members] = await Promise.all([
-
-      // 🔥 Aggregation instead of simple find
       db.collection("queue")
         .aggregate([
           { $match: { roomId } },
-
           { $sort: { position: 1 } },
-
           {
             $lookup: {
               from: "tracks",
@@ -69,9 +65,7 @@ export async function GET(
               as: "track",
             },
           },
-
           { $unwind: "$track" },
-
           {
             $project: {
               _id: 1,

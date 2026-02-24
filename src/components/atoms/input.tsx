@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import Typography from "./typography";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: React.ReactNode;
@@ -9,9 +10,9 @@ export default function Input({ label, className, id, ...props }: InputProps) {
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-slate-300 text-sm">
+        <Typography as="label" variant="bodySmall">
           {label}
-        </label>
+        </Typography>
       )}
       <input
         id={id}

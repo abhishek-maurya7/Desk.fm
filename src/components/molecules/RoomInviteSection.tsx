@@ -15,7 +15,8 @@ export default function RoomInviteSection({
   const handleCopy = async () => {
     try {
       const url =
-        inviteUrl ?? (typeof window !== "undefined" ? window.location.href : "");
+        inviteUrl ??
+        (typeof window !== "undefined" ? window.location.href : "");
 
       if (!url) return;
 
@@ -29,18 +30,20 @@ export default function RoomInviteSection({
   };
 
   return (
-    <div className="flex items-center justify-between p-4">
-      <Typography variant="bodySmall" className="text-gray-300">
-        Invite others to this room
-      </Typography>
+    <div className="flex items-center justify-end p-4">
+      <div className="flex items-center gap-2">
+        <Typography variant="bodySmall" className="text-gray-300">
+          Invite others to this room
+        </Typography>
 
-      <Button
-        variant="secondary"
-        onClick={handleCopy}
-        aria-label="Copy invite link"
-      >
-        {copied ? "Copied ✓" : "Copy Invite"}
-      </Button>
+        <Button
+          variant="secondary"
+          onClick={handleCopy}
+          aria-label="Copy invite link"
+        >
+          {copied ? "Copied ✓" : "Copy Invite"}
+        </Button>
+      </div>
     </div>
   );
 }

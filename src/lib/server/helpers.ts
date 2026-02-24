@@ -61,7 +61,6 @@ export async function getYouTubeMetadata(videoId: string) {
     }
 
     const data = await response.json();
-    console.log("🚀 ~ getYouTubeMetadata ~ data:", data);
 
     if (!data.items || data.items.length === 0) {
       throw new Error("Video not found");

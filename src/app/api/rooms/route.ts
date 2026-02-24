@@ -6,14 +6,12 @@ import MongoClient from "@/lib/server/mongodb/client";
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    console.log("🚀 ~ POST ~ session:", session)
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { name } = await req.json();
-    console.log("🚀 ~ POST ~ name:", name)
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest) {
     const roomResult = await db.collection("rooms").insertOne({
       name: name.trim(),
       playbackControllers: [{
-        _id: userId, claimedAt: new Date()
+        _id: userId, claimedAt: new Date(),
       }],
       createdBy: userId,
       createdAt: new Date(),
@@ -51,6 +49,58 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id || !ObjectId.isValid(session.user.id)) {
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const db = await MongoClient.db();
+    const userId = new ObjectId(session.user.id);
+
+    const result = await db
+      .collection("roomMembers")
+      .aggregate([
+        { $match: { userId } },
+        {
+          $lookup: {
+            from: "rooms",
+            localField: "roomId",
+            foreignField: "_id",
+            as: "room"
+          }
+        },
+        { $unwind: "$room" },
+        {
+          $project: {
+            _id: 0,
+            roomId: 1,
+            name: "$room.name"
+          }
+        }
+      ])
+      .toArray();
+
+    return NextResponse.json(
+      { rooms: result },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("GET /rooms error:", error);
+
+    return NextResponse.json(
+      { message: "Something went wrong" },
+      { status: 500 }
     );
   }
 }
