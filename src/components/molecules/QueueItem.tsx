@@ -10,7 +10,7 @@ export default function QueueItem({ item }: { item }) {
           <Typography variant="bodySmall" as="h3">{item.track.title}</Typography>
           <Typography variant="bodySmall">{item.track.publisher}</Typography>
         </div>
-        <div className="ml-auto">added by {item.addedBy}</div>
+        {/* <div className="ml-auto">added by {item.addedBy}</div> */}
       </div>
     </li>
   );
