@@ -15,11 +15,13 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
           <AddTrackToQueueForm roomId={id} />
         </div>
       </section>
-        <section>
-          <div>
+      <section>
+        <div className="w-full max-w-xl mx-auto">
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
             <Player />
           </div>
-        </section>
+        </div>
+      </section>
       <section>
         <ul className="space-y-2">
           <RoomQueue />
