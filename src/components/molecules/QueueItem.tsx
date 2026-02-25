@@ -23,9 +23,9 @@ export default function QueueItem({
     <li>
       <div className="flex items-stretch bg-[#1A1B1E] text-white p-3 rounded-md gap-3">
         <div className="flex flex-col">
-          <span className="mt-auto text-xl text-zinc-400 font-medium">
+          <Typography variant="bodySmall" as="span" className="text-zinc-400 font-medium mt-auto mb-1">
             {String(index).padStart(2, "0")}
-          </span>
+          </Typography>
         </div>
 
         <div className="flex items-center gap-3">
@@ -33,11 +33,11 @@ export default function QueueItem({
             src={item.track.thumbnail}
             alt={item.track.title}
             width={48}
-            height={56}
-            className="rounded-md"
+            height={48}
+            className="rounded-md aspect-square"
           />
           <div>
-            <Typography variant="bodySmall" as="h3">
+            <Typography variant="bodySmall" as="h3" className="line-clamp-1">
               {item.track.title}
             </Typography>
             <Typography variant="bodySmall" className="text-zinc-400">

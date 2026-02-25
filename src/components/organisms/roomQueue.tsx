@@ -12,8 +12,8 @@ export default function RoomQueue() {
 
   return (
     <>
-      {room.queue.map((queueItem) => (
-        <QueueItem key={queueItem._id} item={queueItem} />
+      {room.queue.map((queueItem, index) => (
+        <QueueItem key={queueItem._id} item={queueItem} index={index} />
       ))}
     </>
   );
