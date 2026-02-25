@@ -6,82 +6,77 @@ import { Input } from "@/components/atoms";
 
 export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
   const [trackUrl, setTrackUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const isValidUrl = (url: string) =>
-    /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i.test(url);
+  const isValidYouTubeUrl = (url: string) =>
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}$/i.test(
+      url,
+    );
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddToQueue = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!trackUrl.trim()) {
-      setError("Please enter a valid track URL.");
+      setFormError("Please enter a valid track URL.");
       return;
     }
 
-    if (!isValidUrl(trackUrl)) {
-      setError("Invalid URL. Please provide a valid YouTube link.");
+    if (!isValidYouTubeUrl(trackUrl.trim())) {
+      setFormError("Invalid URL. Please provide a valid YouTube link.");
       return;
     }
 
-    setError(null);
+    setFormError(null);
+    setIsSubmitting(true);
 
     try {
-      setLoading(true);
-
-      const res = await fetch("/api/queue", {
+      const response = await fetch("/api/queue", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ roomId, uri: trackUrl }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, uri: trackUrl.trim() }),
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error("Failed to add track to the queue.");
       }
 
       setTrackUrl("");
-    } catch (err) {
-      console.error(err);
-      setError("An error occurred while adding the track. Please try again.");
+    } catch (error) {
+      console.error(error);
+      setFormError(
+        "An error occurred while adding the track. Please try again.",
+      );
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="trackUrl" className="text-sm font-medium text-zinc-300">
-          Add a YouTube Track
-        </label>
+    <Form onSubmit={handleAddToQueue} className="space-y-4">
+      <div className="flex justify-end items-end gap-4">
+        <Input
+          type="text"
+          id="trackUrl"
+          placeholder="YouTube link ..."
+          value={trackUrl}
+          onChange={(e) => setTrackUrl(e.target.value)}
+          aria-invalid={formError ? "true" : "false"}
+          className="w-full md:w-1/3"
+        />
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full">
-          <div className="flex-1 w-full">
-            <Input
-              type="text"
-              id="trackUrl"
-              placeholder="https://youtube.com/..."
-              value={trackUrl}
-              onChange={(e) => setTrackUrl(e.target.value)}
-              aria-invalid={error ? "true" : "false"}
-              className="w-full"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium whitespace-nowrap"
-          >
-            {loading ? "Adding..." : "Add to Queue"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium whitespace-nowrap transition-colors"
+        >
+          {isSubmitting ? "Adding..." : "Add to Queue"}
+        </button>
       </div>
 
-      {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+      {formError && (
+        <p className="text-sm text-red-500 font-medium">{formError}</p>
+      )}
     </Form>
   );
 }

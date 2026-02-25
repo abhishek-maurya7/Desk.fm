@@ -8,9 +8,9 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export default function Input({ label, className, id, ...props }: InputProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <>
       {label && (
-        <Typography as="label" variant="bodySmall">
+        <Typography as="label" variant="bodySmall" className="mb-1">
           {label}
         </Typography>
       )}
@@ -24,6 +24,6 @@ export default function Input({ label, className, id, ...props }: InputProps) {
         )}
         {...props}
       />
-    </div>
+    </>
   );
 }

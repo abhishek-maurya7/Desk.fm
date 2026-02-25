@@ -5,7 +5,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
   const { id } = await params;
 
   return (
-    <main>
+    <main className="space-y-6">
       <section>
         <RoomInviteSection />
       </section>
@@ -23,7 +23,15 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
         </div>
       </section>
       <section>
-        <ul className="space-y-2">
+        <div className="mb-6">
+          <h3 className="text-gray-400">
+            Your
+            <span className="text-5xl leading-none block text-white">
+              Queue
+            </span>
+          </h3>
+        </div>
+        <ul className="grid gap-4 lg:grid-cols-2 lg:[&>li:first-child]:col-span-2">
           <RoomQueue />
         </ul>
       </section>
