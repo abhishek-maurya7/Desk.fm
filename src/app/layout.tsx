@@ -28,7 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950`}
       >
-        <div className="px-4 lg:max-w-4/5 mx-auto">
+        <div className="px-4 md:px-6 lg:px-24 lg:max-w-384 mx-auto">
           <SessionProvider>{children}</SessionProvider>
         </div>
       </body>
