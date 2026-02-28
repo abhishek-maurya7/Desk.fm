@@ -61,12 +61,13 @@ export async function getYouTubeMetadata(videoId: string) {
     }
 
     const data = await response.json();
+    console.log("🚀 ~ getYouTubeMetadata ~ data:", JSON.stringify(data))
 
     if (!data.items || data.items.length === 0) {
       throw new Error("Video not found");
     }
 
-    const thumbnail = data.items[0].snippet.thumbnails?.high?.url || data.items[0].snippet.thumbnails?.medium?.url || data.items[0].snippet.thumbnails?.default?.url;
+    const thumbnail = data.items[0].snippet.thumbnails?.maxres?.url || data.items[0].snippet.thumbnails?.high?.url || data.items[0].snippet.thumbnails?.medium?.url || data.items[0].snippet.thumbnails?.default?.url;
 
     return {
       trackId: data.items[0].id,
