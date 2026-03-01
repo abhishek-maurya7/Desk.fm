@@ -55,7 +55,7 @@ export async function GET(
     const [queue, members] = await Promise.all([
       db.collection("queue")
         .aggregate([
-          { $match: { roomId } },
+          { $match: { roomId, status: "queued" } },
           { $sort: { position: 1 } },
           {
             $lookup: {

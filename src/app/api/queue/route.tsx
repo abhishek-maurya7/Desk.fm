@@ -7,13 +7,13 @@ import MongoClient from "@/lib/server/mongodb/client";
 
 export async function POST(req: NextRequest) {
   try {
-    const { roomId, uri } = await req.json();
-
     const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const { roomId, uri } = await req.json();
 
     const roomObjectId = new ObjectId(roomId);
     const userObjectId = new ObjectId(session.user.id);
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (!mediaInfo?.id) {
       return NextResponse.json(
         { message: "Failed to extract track ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,14 +50,13 @@ export async function POST(req: NextRequest) {
     if (!track) {
       return NextResponse.json(
         { message: "Failed to resolve track" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const lastQueueItem = await db.collection("queue").findOne(
-      { roomId: roomObjectId, status: "queued" },
-      { sort: { position: -1 } }
-    );
+    const lastQueueItem = await db
+      .collection("queue")
+      .findOne({ roomId: roomObjectId }, { sort: { position: -1 } });
 
     const nextPosition =
       typeof lastQueueItem?.position === "number"
@@ -80,7 +79,64 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const { queueId, roomId, status } = await req.json();
+
+  const allowedStatus = ["queued", "played"];
+  
+  if (!allowedStatus.includes(status)) {
+    return NextResponse.json(
+      { message: "Invalid status value" },
+      { status: 400 },
+    );
+  }
+
+  const roomObjectId = new ObjectId(roomId);
+  const queueObjectId = new ObjectId(queueId);
+  const userObjectId = new ObjectId(session.user.id);
+
+  const isAuthorized = await hasRoomAccess(roomObjectId, userObjectId);
+
+  if (!isAuthorized) {
+    return NextResponse.json({ message: "Access denied" }, { status: 403 });
+  }
+
+  const db = await MongoClient.db();
+
+  const result = await db.collection("queue").updateOne(
+    {
+      _id: queueObjectId,
+      roomId: roomObjectId,
+      status: "queued",
+    },
+    {
+      $set: {
+        status: status,
+        position: null,
+        playedAt: new Date(),
+      },
+    },
+  );
+  
+  console.log("🚀 ~ PATCH ~ result:", result);
+
+  if (result.matchedCount === 0) {
+    return NextResponse.json(
+      { message: "Queue item not found or already updated" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
