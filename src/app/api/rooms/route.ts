@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       joinedAt: new Date(),
     });
 
-    return NextResponse.json({ roomId: roomId.toString() }, { status: 201 });
+    return NextResponse.json({ roomId: roomId, name: name }, { status: 201 });
   } catch (error) {
     console.error("Create room error:", error);
 
