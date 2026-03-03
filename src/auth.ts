@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import { ObjectId } from "mongodb";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import Credentials from "next-auth/providers/credentials";
-import  MongoClient  from "@/lib/server/mongodb/client";
+import MongoClient from "@/lib/server/mongodb/client";
 
 import type { LoginCredentials, User } from "@/types";
 
@@ -12,6 +12,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   session: {
     strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 7,
+  },
+
+  jwt: {
+    maxAge: 60 * 60 * 24 * 7,
   },
 
   providers: [
@@ -61,7 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-  
+
   pages: {
     signIn: "/login",
   },
