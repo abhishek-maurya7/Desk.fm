@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:ws": "partykit dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "deploy:ws": "partykit deploy",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
