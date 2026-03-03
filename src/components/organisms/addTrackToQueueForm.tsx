@@ -3,16 +3,12 @@
 import { useState } from "react";
 import { Form } from "@/components/molecules";
 import { Input } from "@/components/atoms";
+import { isValidSource } from "@/lib/utils";
 
 export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
   const [trackUrl, setTrackUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  const isValidYouTubeUrl = (url: string) =>
-    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}$/i.test(
-      url,
-    );
 
   const handleAddToQueue = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,7 +18,7 @@ export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
       return;
     }
 
-    if (!isValidYouTubeUrl(trackUrl.trim())) {
+    if (!isValidSource(trackUrl)) {
       setFormError("Invalid URL. Please provide a valid YouTube link.");
       return;
     }
