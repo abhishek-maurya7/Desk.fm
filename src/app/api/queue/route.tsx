@@ -5,23 +5,41 @@ import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import MongoClient from "@/lib/server/mongodb/client";
 
-export async function POST(req: NextRequest) {
+import PartySocket from "partysocket";
+
+export async function POST(request: NextRequest) {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { roomId, uri } = await req.json();
+    const { roomId, uri } = await request.json();
+
+    if (!roomId || !uri) {
+      return NextResponse.json(
+        { message: "Missing roomId or uri" },
+        { status: 400 }
+      );
+    }
 
     const roomObjectId = new ObjectId(roomId);
-    const userObjectId = new ObjectId(session.user.id);
+    const currentUserObjectId = new ObjectId(session.user.id);
 
-    const isAuthorized = await hasRoomAccess(roomObjectId, userObjectId);
+    const hasAccess = await hasRoomAccess(
+      roomObjectId,
+      currentUserObjectId
+    );
 
-    if (!isAuthorized) {
-      return NextResponse.json({ message: "Access denied" }, { status: 403 });
+    if (!hasAccess) {
+      return NextResponse.json(
+        { message: "Access denied" },
+        { status: 403 }
+      );
     }
 
     const mediaInfo = extractMediaInfo(uri);
@@ -29,57 +47,102 @@ export async function POST(req: NextRequest) {
     if (!mediaInfo?.id) {
       return NextResponse.json(
         { message: "Failed to extract track ID" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const db = await MongoClient.db();
+    const trackId = mediaInfo.id;
 
-    const videoId = mediaInfo.id;
+    let existingTrack = await db
+      .collection("tracks")
+      .findOne({ trackId });
 
-    let track = await db.collection("tracks").findOne({ trackId: videoId });
+    if (!existingTrack) {
+      const metadata = await getYouTubeMetadata(trackId);
 
-    if (!track) {
-      const metadata = await getYouTubeMetadata(videoId);
+      if (!metadata) {
+        return NextResponse.json(
+          { message: "Failed to fetch metadata" },
+          { status: 500 }
+        );
+      }
 
-      const result = await db.collection("tracks").insertOne(metadata);
+      const insertTrackResult = await db
+        .collection("tracks")
+        .insertOne(metadata);
 
-      track = { ...metadata, _id: result.insertedId };
+      existingTrack = {
+        ...metadata,
+        _id: insertTrackResult.insertedId,
+      };
     }
 
-    if (!track) {
-      return NextResponse.json(
-        { message: "Failed to resolve track" },
-        { status: 500 },
-      );
-    }
-
-    const lastQueueItem = await db
+    const lastQueueEntry = await db
       .collection("queue")
-      .findOne({ roomId: roomObjectId }, { sort: { position: -1 } });
+      .findOne(
+        { roomId: roomObjectId },
+        { sort: { position: -1 } }
+      );
 
-    const nextPosition =
-      typeof lastQueueItem?.position === "number"
-        ? lastQueueItem.position + 1
+    const nextQueuePosition =
+      typeof lastQueueEntry?.position === "number"
+        ? lastQueueEntry.position + 1
         : 1;
 
-    await db.collection("queue").insertOne({
-      roomId: roomObjectId,
-      trackId: track._id,
-      position: nextPosition,
-      status: "queued",
-      addedBy: userObjectId,
-      addedAt: new Date(),
+    const createdAt = new Date();
+
+    const insertQueueResult = await db
+      .collection("queue")
+      .insertOne({
+        roomId: roomObjectId,
+        trackId: existingTrack._id,
+        position: nextQueuePosition,
+        status: "queued",
+        addedBy: currentUserObjectId,
+        addedAt: createdAt,
+      });
+
+    const queueItemPayload = {
+      _id: insertQueueResult.insertedId.toString(),
+      position: nextQueuePosition,
+      addedBy: currentUserObjectId.toString(),
+      addedAt: createdAt,
+      track: {
+        _id: existingTrack._id.toString(),
+        trackId: existingTrack.trackId,
+        title: existingTrack.title,
+        publisher: existingTrack.publisher,
+        thumbnail: existingTrack.thumbnail,
+        provider: existingTrack.provider,
+      },
+    };
+
+    const partySocket = new PartySocket({
+      host: process.env.NEXT_PUBLIC_PARTYKIT_HOST!,
+      room: roomId,
     });
 
-    return NextResponse.json({
-      trackId: track._id.toString(),
-      ...track,
+    partySocket.addEventListener("open", () => {
+      partySocket.send(
+        JSON.stringify({
+          type: "TRACK_ADDED",
+          payload: queueItemPayload,
+        })
+      );
+
+      partySocket.close();
     });
+
+    partySocket.addEventListener("error", (socketError) => {
+      console.error("PartySocket error:", socketError);
+    });
+
+    return NextResponse.json(queueItemPayload);
   } catch {
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -94,7 +157,7 @@ export async function PATCH(req: NextRequest) {
   const { queueId, roomId, status } = await req.json();
 
   const allowedStatus = ["queued", "played"];
-  
+
   if (!allowedStatus.includes(status)) {
     return NextResponse.json(
       { message: "Invalid status value" },
@@ -128,8 +191,6 @@ export async function PATCH(req: NextRequest) {
       },
     },
   );
-  
-  console.log("🚀 ~ PATCH ~ result:", result);
 
   if (result.matchedCount === 0) {
     return NextResponse.json(
