@@ -1,0 +1,4 @@
+{
+  "name": "desk-fm-realtime",
+  "main": "partykit/server.ts"
+}
