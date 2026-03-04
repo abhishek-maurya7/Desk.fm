@@ -14,13 +14,10 @@ export async function GET(req: NextRequest, context: RouteContext) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = context.params;
+    const { slug } = await context.params;
 
     if (!slug || !ObjectId.isValid(slug)) {
       return NextResponse.json({ error: "Invalid invite code." }, { status: 400 });
@@ -36,17 +33,10 @@ export async function GET(req: NextRequest, context: RouteContext) {
       );
     }
 
-    return NextResponse.json(
-      { name: room.name },
-      { status: 200 }
-    );
+    return NextResponse.json({ name: room.name }, { status: 200 });
   } catch (err) {
     console.error("Invite GET error:", err);
-
-    return NextResponse.json(
-      { error: "Server error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
 
@@ -55,14 +45,11 @@ export async function POST(req: NextRequest, context: RouteContext) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = new ObjectId(session.user.id);
-    const { slug } = context.params;
+    const { slug } = await context.params;
 
     if (!slug || !ObjectId.isValid(slug)) {
       return NextResponse.json({ error: "Invalid invite code." }, { status: 400 });
@@ -95,10 +82,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
     );
   } catch (err) {
     console.error("Invite POST error:", err);
-
-    return NextResponse.json(
-      { error: "Server error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
