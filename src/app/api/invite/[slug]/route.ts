@@ -1,21 +1,26 @@
 import { auth } from "@/auth";
-
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import MongoClient from "@/lib/server/mongodb/client";
 
+type RouteContext = {
+  params: {
+    slug: string;
+  };
+};
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { slug: string } }
-) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
     const session = await auth();
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { slug } = await context.params;
+    const { slug } = context.params;
 
     if (!slug || !ObjectId.isValid(slug)) {
       return NextResponse.json(
@@ -37,25 +42,33 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ name: room.name }, { status: 200 });
+    return NextResponse.json(
+      { name: room.name },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("Invite GET error:", err);
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
+
+    return NextResponse.json(
+      { error: "Server error." },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  context: { params: { slug: string } }
-) {
+export async function POST(req: NextRequest, context: RouteContext) {
   try {
     const session = await auth();
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const userId = new ObjectId(session.user.id);
-    const { slug } = await context.params;
+    const { slug } = context.params;
 
     if (!slug || !ObjectId.isValid(slug)) {
       return NextResponse.json(
@@ -67,7 +80,9 @@ export async function POST(
     const roomId = new ObjectId(slug);
     const db = MongoClient.db();
 
-    const room = await db.collection("rooms").findOne({ _id: roomId });
+    const room = await db
+      .collection("rooms")
+      .findOne({ _id: roomId });
 
     if (!room) {
       return NextResponse.json(
@@ -76,7 +91,7 @@ export async function POST(
       );
     }
 
-    const result = await db.collection("roomMembers").updateOne(
+    await db.collection("roomMembers").updateOne(
       { roomId, userId },
       {
         $setOnInsert: {
@@ -89,13 +104,6 @@ export async function POST(
       { upsert: true }
     );
 
-    if (result.matchedCount > 0) {
-      return NextResponse.json(
-        { message: "You are already a member of this room.", name: room.name },
-        { status: 200 }
-      );
-    }
-
     return NextResponse.json(
       {
         message: "Successfully joined the room.",
@@ -105,6 +113,10 @@ export async function POST(
     );
   } catch (err) {
     console.error("Invite POST error:", err);
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
+
+    return NextResponse.json(
+      { error: "Server error." },
+      { status: 500 }
+    );
   }
 }
