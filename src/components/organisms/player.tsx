@@ -4,6 +4,12 @@ import { RoomContext } from "@/contexts/roomContext";
 import { useSession } from "next-auth/react";
 import { useContext, useEffect, useRef, useState } from "react";
 
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
 export default function Player() {
   const { room, setRoom } = useContext(RoomContext)!;
   const session = useSession();

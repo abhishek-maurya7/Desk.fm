@@ -930,6 +930,11 @@
   dependencies:
     "@types/webidl-conversions" "*"
 
+"@types/youtube@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@types/youtube/-/youtube-0.1.2.tgz#e87d9ceeb8a00b3ac6d7325cc5217995a0cedfcc"
+  integrity sha512-n1/KqusanheyQRWHamNZv8K3kydlRqyEsZEKxMTeNWXQTC15lZprITCUt+WgL1vAIvKHCjPBIWz/gf/KQLsB3g==
+
 "@typescript-eslint/eslint-plugin@8.54.0":
   version "8.54.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.54.0.tgz#d8899e5c2eccf5c4a20d01c036a193753748454d"
