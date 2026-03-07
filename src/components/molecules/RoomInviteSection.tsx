@@ -39,8 +39,8 @@ export default function RoomInviteSection({ roomId }: RoomInviteSectionProps) {
           variant="secondary"
           aria-label="Copy invite link"
           onClick={handleCopy}
+          startIcon={<Copy className="w-4 h-4" />}
         >
-          <Copy className="w-4 h-4" />
           <Typography variant="bodySmall">
             {copied ? "Invite Copied!" : "Invite Members"}
           </Typography>
