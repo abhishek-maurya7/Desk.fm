@@ -2,30 +2,29 @@
 
 import { useState } from "react";
 import { Button, Typography } from "@/components/atoms";
+import { Copy } from "lucide-react";
 
 interface RoomInviteSectionProps {
-  inviteUrl?: string;
+  roomId?: string;
 }
 
-export default function RoomInviteSection({
-  inviteUrl,
-}: RoomInviteSectionProps) {
+export default function RoomInviteSection({ roomId }: RoomInviteSectionProps) {
   const [copied, setCopied] = useState(false);
 
+  if (!roomId) return null;
+
   const handleCopy = async () => {
+    const inviteUrl = `${location.origin}/invite/${roomId}`;
+
     try {
-      const url =
-        inviteUrl ??
-        (typeof window !== "undefined" ? window.location.href : "");
-
-      if (!url) return;
-
-      await navigator.clipboard.writeText(url);
-
+      await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy invite link:", error);
     }
   };
 
@@ -38,10 +37,13 @@ export default function RoomInviteSection({
 
         <Button
           variant="secondary"
-          onClick={handleCopy}
           aria-label="Copy invite link"
+          onClick={handleCopy}
         >
-          {copied ? "Copied ✓" : "Copy Invite"}
+          <Copy className="w-4 h-4" />
+          <Typography variant="bodySmall">
+            {copied ? "Invite Copied!" : "Invite Members"}
+          </Typography>
         </Button>
       </div>
     </div>
