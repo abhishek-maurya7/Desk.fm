@@ -25,7 +25,7 @@ export default function QueueItem({
         <Typography
           variant="bodyLarge"
           as="span"
-          className="font-medium text-slate-400 w-6 text-center shrink-0 mt-auto hidden md:unset"
+          className="font-medium text-slate-400 w-6 text-center shrink-0 mt-auto hidden md:inline"
         >
           {String(index).padStart(2, "0")}
         </Typography>
