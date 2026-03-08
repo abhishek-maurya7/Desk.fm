@@ -25,13 +25,13 @@ export default function QueueItem({
         <Typography
           variant="bodyLarge"
           as="span"
-          className="font-medium text-slate-400 w-6 text-center shrink-0 mt-auto hidden md:inline"
+          className="font-medium text-slate-400 w-6 text-center shrink-0 mt-auto hidden md:unset"
         >
           {String(index).padStart(2, "0")}
         </Typography>
 
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden relative">
+          <div className="w-12 h-12 shrink-0 rounded-md overflow-hidden relative">
             <Image
               src={item.track.thumbnail}
               alt={item.track.title}
