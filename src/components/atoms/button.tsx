@@ -1,6 +1,6 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center rounded-md font-semibold transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md",
@@ -25,22 +25,33 @@ const buttonVariants = cva(
       size: "md",
     },
   }
-)
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonVariants> {
+  startIcon?: React.ReactElement;
+  endIcon?: React.ReactElement;
+}
 
 export default function Button({
   className,
   variant,
   size,
+  startIcon,
+  endIcon,
+  children,
   ...props
 }: ButtonProps) {
   return (
     <button
+      type={props.type ?? "button"}
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
-    />
-  )
+    >
+      {startIcon && <span className="mr-2 flex items-center">{startIcon}</span>}
+      {children}
+      {endIcon && <span className="ml-2 flex items-center">{endIcon}</span>}
+    </button>
+  );
 }

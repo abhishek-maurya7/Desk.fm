@@ -7,7 +7,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
   return (
     <main className="space-y-6">
       <section>
-        <RoomInviteSection />
+        <RoomInviteSection roomId={id} />
       </section>
       <section>
         <div className="w-full max-w-xl mx-auto">

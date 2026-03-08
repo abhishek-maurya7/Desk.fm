@@ -1,6 +1,7 @@
 "use client";
 
-import { RoomContext } from "@/contexts/roomContext";
+import { PartyKitContext } from "@/contexts/partykitContext";
+import { QueueItem, RoomContext } from "@/contexts/roomContext";
 import { useSession } from "next-auth/react";
 import { useContext, useEffect, useRef, useState } from "react";
 
@@ -26,16 +27,24 @@ export default function Player() {
   const [ytReady, setYtReady] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
 
+  const partykit = useContext(PartyKitContext);
+
   const playerRef = useRef<YT.Player | null>(null);
   const queueRef = useRef(queue);
   const isProcessingRef = useRef(false);
 
-  /* Keep queue fresh for callbacks */
+  const connectionIdRef = useRef<string | null>(null);
+
+  const currentTrackIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     queueRef.current = queue;
   }, [queue]);
 
-  /* Load YouTube API */
+  useEffect(() => {
+    connectionIdRef.current = partykit?.connectionId ?? null;
+  }, [partykit?.connectionId]);
+
   useEffect(() => {
     if (!isController) return;
 
@@ -45,7 +54,7 @@ export default function Player() {
     }
 
     const existingScript = document.querySelector(
-      'script[src="https://www.youtube.com/iframe_api"]'
+      'script[src="https://www.youtube.com/iframe_api"]',
     );
 
     if (!existingScript) {
@@ -60,26 +69,30 @@ export default function Player() {
     };
   }, [isController]);
 
-  /* Mark as played */
-  const markAsPlayedAndRemove = async (track?: any) => {
+  const markAsPlayedAndRemove = async (track?: QueueItem) => {
     if (!track || isProcessingRef.current) return;
 
     isProcessingRef.current = true;
 
     try {
-      await fetch("/api/queue", {
+      const res = await fetch("/api/queue", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           queueId: track._id,
           roomId: room._id,
           status: "played",
+          senderConnectionId: connectionIdRef.current,
         }),
       });
 
+      const data = await res.json();
+
+      if (!data?.queueId) return;
+
       setRoom((prev) => ({
         ...prev,
-        queue: prev.queue.slice(1),
+        queue: prev.queue.filter((q) => q._id !== data.queueId),
       }));
     } catch (err) {
       console.error("Queue update failed:", err);
@@ -88,7 +101,6 @@ export default function Player() {
     }
   };
 
-  /* Create player once */
   useEffect(() => {
     if (!ytReady || !isController) return;
     if (playerRef.current) return;
@@ -130,13 +142,18 @@ export default function Player() {
     };
   }, [ytReady, isController]);
 
-  /* React to queue changes */
   useEffect(() => {
     if (!playerReady) return;
     if (!playerRef.current) return;
     if (queue.length === 0) return;
 
-    playerRef.current.loadVideoById(queue[0].track.trackId);
+    const nextTrackId = queue[0].track.trackId;
+
+    if (currentTrackIdRef.current === nextTrackId) return;
+
+    currentTrackIdRef.current = nextTrackId;
+
+    playerRef.current.loadVideoById(nextTrackId);
   }, [queue, playerReady]);
 
   if (!isController) return null;
