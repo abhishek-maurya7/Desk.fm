@@ -1,3 +1,4 @@
+import { Typography } from "@/components/atoms";
 import { RoomInviteSection } from "@/components/molecules";
 import { AddTrackToQueueForm, Player, RoomQueue } from "@/components/organisms";
 
@@ -11,18 +12,20 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
       </section>
       <section>
         <div className="w-full max-w-xl mx-auto">
-            <Player />
+          <Player />
         </div>
       </section>
-       <section>
-        <div className="mb-6 flex justify-between items-end">
-          <h3 className="text-gray-400">
-            Your
-            <span className="text-5xl leading-none block text-white">
+      <section>
+        <div className="mb-6 flex justify-between items-center">
+          <Typography as="h3" variant="h3">
+            <Typography as="span" variant="bodyMedium" className="block leading-normal -mb-2">
+              Your
+            </Typography>
+            <Typography as="span" className="text-4xl">
               Queue
-            </span>
-          </h3>
-          <div className="text-white w-1/2">
+            </Typography>
+          </Typography>
+          <div className="w-1/2">
             <AddTrackToQueueForm roomId={id} />
           </div>
         </div>
