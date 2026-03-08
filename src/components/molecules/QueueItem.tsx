@@ -31,7 +31,7 @@ export default function QueueItem({
         </Typography>
 
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 shrink-0 rounded-md md:rounded-xl overflow-hidden relative">
+          <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden relative">
             <Image
               src={item.track.thumbnail}
               alt={item.track.title}
