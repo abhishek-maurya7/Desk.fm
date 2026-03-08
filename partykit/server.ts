@@ -16,7 +16,20 @@ export default class Server implements Party.Server {
   }
 
   onMessage(message: string) {
-    this.room.broadcast(message);
+    try {
+      const data = JSON.parse(message);
+
+      const exclude: string[] = [];
+
+      if (data.senderConnectionId) {
+        exclude.push(data.senderConnectionId);
+      }
+
+      this.room.broadcast(message, exclude);
+    } catch {
+      console.warn("[PartyKit] Failed to parse message");
+      this.room.broadcast(message);
+    }
   }
 }
 

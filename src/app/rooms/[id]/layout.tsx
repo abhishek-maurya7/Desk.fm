@@ -1,6 +1,5 @@
-import RoomContextProvider, {
-  RoomState,
-} from "@/contexts/roomContext";
+import PartyKitContextProvider from "@/contexts/partykitContext";
+import RoomContextProvider, { RoomState } from "@/contexts/roomContext";
 import { getBaseUrl } from "@/lib/server/helpers";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -43,7 +42,9 @@ export default async function Layout({
 
   return (
     <RoomContextProvider initialData={roomData}>
-      <div>{children}</div>
+      <PartyKitContextProvider>
+        <div>{children}</div>
+      </PartyKitContextProvider>
     </RoomContextProvider>
   );
 }

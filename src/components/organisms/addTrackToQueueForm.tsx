@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Form } from "@/components/molecules";
 import { Input } from "@/components/atoms";
 import { isValidSource } from "@/lib/utils";
+import { RoomContext } from "@/contexts/roomContext";
+import { PartyKitContext } from "@/contexts/partykitContext";
 
 export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
   const [trackUrl, setTrackUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const roomContext = useContext(RoomContext);
+  const { setRoom } = roomContext;
+  const partykit = useContext(PartyKitContext);
 
   const handleAddToQueue = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,12 +36,33 @@ export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
       const response = await fetch("/api/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId, uri: trackUrl.trim() }),
+        body: JSON.stringify({
+          roomId,
+          uri: trackUrl.trim(),
+          senderConnectionId: partykit.connectionId,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add track to the queue.");
-      }
+      if (!response.ok) throw new Error("Failed to add track to the queue");
+
+      const data = await response.json();
+
+      const newItem: QueueItem = {
+        ...data,
+        addedAt: new Date(data.addedAt),
+        status: "queued",
+      };
+
+      setRoom((prev) => {
+        const exists = prev.queue.some((q) => q._id === newItem._id);
+        if (exists) return prev;
+        return {
+          ...prev,
+          queue: [...prev.queue, newItem].sort(
+            (a, b) => a.position - b.position,
+          ),
+        };
+      });
 
       setTrackUrl("");
     } catch (error) {
