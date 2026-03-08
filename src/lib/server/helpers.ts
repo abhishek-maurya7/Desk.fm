@@ -17,8 +17,7 @@ export async function getBaseUrl() {
     const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
     const baseUrl = `${protocol}://${host}`;
     return baseUrl;
-  } catch (error) {
-    console.error("Error getting base URL:", error);
+  } catch {
     return null;
   }
 }
@@ -61,7 +60,6 @@ export async function getYouTubeMetadata(videoId: string) {
     }
 
     const data = await response.json();
-    console.log("🚀 ~ getYouTubeMetadata ~ data:", JSON.stringify(data))
 
     if (!data.items || data.items.length === 0) {
       throw new Error("Video not found");

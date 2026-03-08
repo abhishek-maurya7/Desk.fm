@@ -34,8 +34,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json({ name: room.name }, { status: 200 });
-  } catch (err) {
-    console.error("Invite GET error:", err);
+  } catch {
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
@@ -80,8 +79,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
       { message: "Successfully joined the room.", name: room.name },
       { status: 200 }
     );
-  } catch (err) {
-    console.error("Invite POST error:", err);
+  } catch {
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

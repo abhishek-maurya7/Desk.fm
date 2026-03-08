@@ -97,9 +97,7 @@ export async function GET(
       members,
     });
 
-  } catch (error) {
-    console.error("ROOM_GET_ERROR:", error);
-
+  } catch {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

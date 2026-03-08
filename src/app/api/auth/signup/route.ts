@@ -34,8 +34,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ userId: result.insertedId });
-  } catch (error) {
-    console.error("Signup failed:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

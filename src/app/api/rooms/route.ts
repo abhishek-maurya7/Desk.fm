@@ -43,9 +43,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ roomId: roomId, name: name }, { status: 201 });
-  } catch (error) {
-    console.error("Create room error:", error);
-
+  } catch {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
@@ -53,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 
@@ -95,9 +93,7 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
 
-  } catch (error) {
-    console.error("GET /rooms error:", error);
-
+  } catch {
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }
