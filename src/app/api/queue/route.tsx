@@ -112,14 +112,14 @@ export async function POST(req: NextRequest) {
         resolve();
       });
 
-      socket.addEventListener("error", (err) => {
+      socket.addEventListener("error", () => {
         socket.close();
         resolve();
       });
     });
 
     return NextResponse.json(payload);
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
@@ -192,7 +192,7 @@ export async function PATCH(req: NextRequest) {
       resolve();
     });
 
-    socket.addEventListener("error", (err) => {
+    socket.addEventListener("error", () => {
       socket.close();
       resolve();
     });
