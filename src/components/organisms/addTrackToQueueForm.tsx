@@ -4,7 +4,7 @@ import { useContext, useState } from "react";
 import { Form } from "@/components/molecules";
 import { Input } from "@/components/atoms";
 import { isValidSource } from "@/lib/utils";
-import { RoomContext } from "@/contexts/roomContext";
+import { QueueItem, RoomContext } from "@/contexts/roomContext";
 import { PartyKitContext } from "@/contexts/partykitContext";
 
 export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
@@ -12,8 +12,7 @@ export default function AddTrackToQueueForm({ roomId }: { roomId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const roomContext = useContext(RoomContext);
-  const { setRoom } = roomContext;
+  const { setRoom } = useContext(RoomContext)!;
   const partykit = useContext(PartyKitContext);
 
   const handleAddToQueue = async (e: React.FormEvent<HTMLFormElement>) => {
