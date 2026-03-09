@@ -21,19 +21,17 @@ export default function QueueItem({
 }) {
   return (
     <li>
-      <div className="flex items-stretch bg-[#1A1B1E] text-white p-3 rounded-md gap-3">
-        <div className="flex flex-col">
-          <Typography
-            variant="bodySmall"
-            as="span"
-            className="text-zinc-400 font-medium mt-auto mb-1"
-          >
-            {String(index).padStart(2, "0")}
-          </Typography>
-        </div>
+      <div className="flex items-center bg-[#0F172A] p-2 md:p-4 rounded-lg md:rounded-2xl gap-2 md:gap-4 border border-[#263348]">
+        <Typography
+          variant="bodyLarge"
+          as="span"
+          className="font-medium text-slate-400 w-6 text-center shrink-0 mt-auto hidden md:inline"
+        >
+          {String(index).padStart(2, "0")}
+        </Typography>
 
-        <div className="flex items-center gap-3">
-          <div className="w-12 aspect-square rounded-md overflow-hidden relative">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 shrink-0 rounded-md overflow-hidden relative">
             <Image
               src={item.track.thumbnail}
               alt={item.track.title}
@@ -42,10 +40,14 @@ export default function QueueItem({
             />
           </div>
           <div>
-            <Typography variant="bodySmall" as="h3" className="line-clamp-1">
+            <Typography
+              variant="bodySmall"
+              as="h3"
+              className="line-clamp-1 text-slate-200 font-medium"
+            >
               {item.track.title}
             </Typography>
-            <Typography variant="bodySmall" className="text-zinc-400">
+            <Typography variant="bodySmall" className="text-slate-400">
               {item.track.publisher}
             </Typography>
           </div>

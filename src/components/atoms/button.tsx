@@ -8,27 +8,28 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-slate-400",
+          "bg-[#0F172A] text-slate-300 hover:bg-slate-600 focus:ring-slate-400",
         secondary:
-          "bg-transparent border-2 border-slate-600 text-slate-100 hover:bg-slate-700/30",
+          "bg-transparent border-2 border-slate-600 text-slate-300 hover:bg-slate-700/30",
         tertiary:
-          "bg-transparent border-b-2 border-slate-600 text-slate-100 hover:text-slate-200 rounded-none",
+          "bg-transparent border-b-2 border-slate-600 text-slate-300 hover:text-slate-200 rounded-none",
       },
       size: {
-        sm: "px-3 py-1 text-sm",
-        md: "px-4 py-2 text-sm",
-        lg: "px-5 py-3 text-base",
+        sm: "px-3 py-1",
+        md: "px-4 py-2",
+        lg: "px-5 py-3",
       },
     },
     defaultVariants: {
       variant: "primary",
       size: "md",
     },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   startIcon?: React.ReactElement;
   endIcon?: React.ReactElement;

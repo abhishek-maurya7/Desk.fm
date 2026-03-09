@@ -29,12 +29,7 @@ export default function RoomInviteSection({ roomId }: RoomInviteSectionProps) {
   };
 
   return (
-    <div className="flex items-center justify-end p-4">
-      <div className="flex items-center gap-2">
-        <Typography variant="bodySmall" className="text-gray-300">
-          Invite others to this room
-        </Typography>
-
+    <div className="flex items-center justify-end py-4">
         <Button
           variant="secondary"
           aria-label="Copy invite link"
@@ -45,7 +40,6 @@ export default function RoomInviteSection({ roomId }: RoomInviteSectionProps) {
             {copied ? "Invite Copied!" : "Invite Members"}
           </Typography>
         </Button>
-      </div>
     </div>
   );
 }
