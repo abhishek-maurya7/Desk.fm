@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
-import MongoClient from "@/lib/server/mongodb/client";
+import { createRoom, getUserRooms, joinRoom } from "@/lib/server/mongodb/helpers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,27 +20,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const db = MongoClient.db();
-
     const userId = new ObjectId(session.user.id);
 
-    const roomResult = await db.collection("rooms").insertOne({
-      name: name.trim(),
-      playbackControllers: [{
-        _id: userId, claimedAt: new Date(),
-      }],
-      createdBy: userId,
-      createdAt: new Date(),
-    });
+    const roomResult = await createRoom(name, userId);
 
     const roomId = roomResult.insertedId;
 
-    await db.collection("roomMembers").insertOne({
-      roomId,
-      userId,
-      role: "owner",
-      joinedAt: new Date(),
-    });
+    await joinRoom(roomId, userId);
 
     return NextResponse.json({ roomId: roomId, name: name }, { status: 201 });
   } catch {
@@ -62,31 +48,9 @@ export async function GET() {
       );
     }
 
-    const db = await MongoClient.db();
     const userId = new ObjectId(session.user.id);
 
-    const result = await db
-      .collection("roomMembers")
-      .aggregate([
-        { $match: { userId } },
-        {
-          $lookup: {
-            from: "rooms",
-            localField: "roomId",
-            foreignField: "_id",
-            as: "room"
-          }
-        },
-        { $unwind: "$room" },
-        {
-          $project: {
-            _id: 0,
-            roomId: 1,
-            name: "$room.name"
-          }
-        }
-      ])
-      .toArray();
+    const result = await getUserRooms(userId);
 
     return NextResponse.json(
       { rooms: result },

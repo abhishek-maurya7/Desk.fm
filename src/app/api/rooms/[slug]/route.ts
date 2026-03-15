@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
-import MongoClient from "@/lib/server/mongodb/client";
 import { ObjectId } from "mongodb";
+import { getRoomById, getRoomQueueAndMembers, hasRoomAccess } from "@/lib/server/mongodb/helpers";
 
 export async function GET(
   req: NextRequest,
@@ -29,9 +29,7 @@ export async function GET(
     const roomId = new ObjectId(slug);
     const userId = new ObjectId(session.user.id);
 
-    const db = await MongoClient.db();
-
-    const room = await db.collection("rooms").findOne({ _id: roomId });
+    const room = await getRoomById(roomId);
 
     if (!room) {
       return NextResponse.json(
@@ -40,10 +38,7 @@ export async function GET(
       );
     }
 
-    const isMember = await db.collection("roomMembers").findOne({
-      roomId,
-      userId,
-    });
+    const isMember = await hasRoomAccess(roomId, userId);
 
     if (!isMember) {
       return NextResponse.json(
@@ -52,44 +47,7 @@ export async function GET(
       );
     }
 
-    const [queue, members] = await Promise.all([
-      db.collection("queue")
-        .aggregate([
-          { $match: { roomId, status: "queued" } },
-          { $sort: { position: 1 } },
-          {
-            $lookup: {
-              from: "tracks",
-              localField: "trackId",
-              foreignField: "_id",
-              as: "track",
-            },
-          },
-          { $unwind: "$track" },
-          {
-            $project: {
-              _id: 1,
-              position: 1,
-              addedBy: 1,
-              addedAt: 1,
-              track: {
-                _id: "$track._id",
-                trackId: "$track.trackId",
-                title: "$track.title",
-                publisher: "$track.publisher",
-                thumbnail: "$track.thumbnail",
-                provider: "$track.provider",
-              },
-            },
-          },
-        ])
-        .toArray(),
-
-      db.collection("roomMembers")
-        .find({ roomId })
-        .project({ userId: 1, role: 1 })
-        .toArray(),
-    ]);
+    const { queue, members } = await getRoomQueueAndMembers(roomId);
 
     return NextResponse.json({
       ...room,

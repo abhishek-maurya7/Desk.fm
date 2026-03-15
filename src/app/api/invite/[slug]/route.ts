@@ -1,35 +1,33 @@
 import { auth } from "@/auth";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
-import MongoClient from "@/lib/server/mongodb/client";
+import { getRoomById, joinRoom } from "@/lib/server/mongodb/helpers";
 
-type RouteContext = {
-  params: Promise<{
-    slug: string;
-  }>;
-};
+type Params = { slug: string };
 
-export async function GET(req: NextRequest, context: RouteContext) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   try {
     const session = await auth();
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = await context.params;
-
+    const { slug } = await params;
     if (!slug || !ObjectId.isValid(slug)) {
-      return NextResponse.json({ error: "Invalid invite code." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid invite code." },
+        { status: 400 },
+      );
     }
 
-    const db = MongoClient.db();
-    const room = await db.collection("rooms").findOne({ _id: new ObjectId(slug) });
-
+    const room = await getRoomById(new ObjectId(slug));
     if (!room) {
       return NextResponse.json(
         { error: "This invite link is invalid or expired." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -39,7 +37,10 @@ export async function GET(req: NextRequest, context: RouteContext) {
   }
 }
 
-export async function POST(req: NextRequest, context: RouteContext) {
+export async function POST(
+  _req: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   try {
     const session = await auth();
 
@@ -47,39 +48,36 @@ export async function POST(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = new ObjectId(session.user.id);
-    const { slug } = await context.params;
+    const { slug } = await params;
 
     if (!slug || !ObjectId.isValid(slug)) {
-      return NextResponse.json({ error: "Invalid invite code." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid invite code." },
+        { status: 400 },
+      );
     }
 
+    const userId = new ObjectId(session.user.id);
     const roomId = new ObjectId(slug);
-    const db = MongoClient.db();
-    const room = await db.collection("rooms").findOne({ _id: roomId });
 
+    const room = await getRoomById(roomId);
     if (!room) {
       return NextResponse.json({ error: "Room not found." }, { status: 404 });
     }
 
-    await db.collection("roomMembers").updateOne(
-      { roomId, userId },
-      {
-        $setOnInsert: {
-          roomId,
-          userId,
-          role: "member",
-          joinedAt: new Date(),
-        },
-      },
-      { upsert: true }
-    );
+    const { upsertedId } = await joinRoom(roomId, userId);
 
     return NextResponse.json(
-      { message: "Successfully joined the room.", name: room.name },
-      { status: 200 }
+      {
+        name: room.name,
+        message: upsertedId
+          ? "Successfully joined the room."
+          : "Already a member of the room.",
+      },
+      { status: 200 },
     );
-  } catch {
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

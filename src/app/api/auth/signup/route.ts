@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-
-import MongoClient from "@/lib/server/mongodb/client";
+import { createUser, userExistsByEmail } from "@/lib/server/mongodb/helpers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,10 +13,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const db = MongoClient.db();
+    const exists = await userExistsByEmail(email);
 
-    const existingUser = await db.collection("users").findOne({ email });
-    if (existingUser) {
+    if (exists) {
       return NextResponse.json(
         { error: "User already exists" },
         { status: 409 }
@@ -26,15 +24,18 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await db.collection("users").insertOne({
+    const result = await createUser({
       name,
       email,
       password: hashedPassword,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     return NextResponse.json({ userId: result.insertedId });
-  } catch {
+
+  } catch (err) {
+    console.error(err);
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

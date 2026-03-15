@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { extractMediaInfo, getYouTubeMetadata } from "@/lib/server/helpers";
-import { hasRoomAccess } from "@/lib/server/mongodb/helpers";
+import { addNewTrack, addTrackToQueue, getLastQueueItem, getTrackById, hasRoomAccess, updateQueueStatue } from "@/lib/server/mongodb/helpers";
 import MongoClient from "@/lib/server/mongodb/client";
 
 import { ObjectId } from "mongodb";
@@ -42,10 +42,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const db = await MongoClient.db();
     const trackId = mediaInfo.id;
 
-    let track = await db.collection("tracks").findOne({ trackId });
+    let track = await getTrackById(trackId);
 
     if (!track) {
       const metadata = await getYouTubeMetadata(trackId);
@@ -56,27 +55,23 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const { insertedId } = await db.collection("tracks").insertOne(metadata);
+      const { insertedId } = await addNewTrack(metadata);
 
       track = { ...metadata, _id: insertedId };
     }
 
-    const last = await db
-      .collection("queue")
-      .findOne({ roomId: roomObjectId }, { sort: { position: -1 } });
+    const last = await getLastQueueItem(roomObjectId)
 
     const position = typeof last?.position === "number" ? last.position + 1 : 1;
 
     const now = new Date();
 
-    const { insertedId } = await db.collection("queue").insertOne({
+    const {insertedId} = await addTrackToQueue({
       roomId: roomObjectId,
       trackId: track._id,
       position,
-      status: "queued",
-      addedBy: userObjectId,
-      addedAt: now,
-    });
+      userId: userObjectId,
+    })
 
     const payload = {
       _id: insertedId.toString(),
@@ -153,18 +148,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ message: "Access denied" }, { status: 403 });
   }
 
-  const db = await MongoClient.db();
-
-  const result = await db.collection("queue").updateOne(
-    { _id: queueObjectId, roomId: roomObjectId, status: "queued" },
-    {
-      $set: {
-        status,
-        position: null,
-        playedAt: new Date(),
-      },
-    },
-  );
+  const result = await updateQueueStatue(queueObjectId, roomObjectId);
 
   if (result.matchedCount === 0) {
     return NextResponse.json(
