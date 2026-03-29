@@ -6,27 +6,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function isValidSource(uri: string): boolean {
+  const VALID_SOURCES = [
+    "youtube.com",
+    "www.youtube.com",
+    "music.youtube.com",
+    "youtu.be",
+  ];
+
+  const VIDEO_ID_LENGTH = 11;
   try {
     const url = new URL(uri.trim());
 
-    const allowedHosts = ["www.youtube.com", "youtube.com", "youtu.be"];
-    if (!allowedHosts.includes(url.hostname)) {
-      return false;
+    if (!VALID_SOURCES.includes(url.hostname)) return false;
+
+    if (url.hostname === "youtu.be" || url.pathname === "/watch") {
+      const videoId =
+        url.hostname === "youtu.be"
+          ? url.pathname.slice(1)
+          : url.searchParams.get("v");
+      return !!videoId && videoId.length === VIDEO_ID_LENGTH;
     }
 
-    let videoId: string | null = null;
-
-    if (url.hostname === "youtu.be") {
-      videoId = url.pathname.slice(1);
-    } else if (url.hostname.includes("youtube.com")) {
-      videoId = url.searchParams.get("v");
+    if (url.pathname === "/playlist") {
+      return !!url.searchParams.get("list");
     }
 
-    if (!videoId || videoId.length !== 11) {
-      return false;
-    }
-
-    return true;
+    return false;
   } catch {
     return false;
   }

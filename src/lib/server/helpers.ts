@@ -1,9 +1,10 @@
 import { headers } from "next/headers";
 
-type MediaInfo = {
-  provider: "youtube";
+interface MediaInfo {
   id: string;
-};
+  provider: "youtube";
+  type: "video" | "playlist";
+}
 
 export async function getBaseUrl() {
   try {
@@ -22,19 +23,30 @@ export async function getBaseUrl() {
   }
 }
 
+const VALID_SOURCES = [
+  "youtube.com",
+  "www.youtube.com",
+  "music.youtube.com",
+  "youtu.be",
+];
+
 export function extractMediaInfo(uri: string): MediaInfo | null {
   try {
-    const url = new URL(uri);
-    const hostname = url.hostname.replace(/^www\./, "").toLowerCase();
+    const url = new URL(uri.trim());
+    if (!VALID_SOURCES.includes(url.hostname)) return null;
 
-    if (hostname === "youtube.com" && url.pathname === "/watch") {
-      const id = url.searchParams.get("v");
-      if (id) return { provider: "youtube", id };
+    if (url.hostname === "youtu.be" || url.pathname === "/watch") {
+      const id = url.hostname === "youtu.be"
+        ? url.pathname.slice(1)
+        : url.searchParams.get("v");
+      if (!id) return null;
+      return { id, type: "video", provider: "youtube" };
     }
 
-    if (hostname === "youtu.be") {
-      const id = url.pathname.slice(1);
-      if (id) return { provider: "youtube", id };
+    if (url.pathname === "/playlist") {
+      const id = url.searchParams.get("list");
+      if (!id) return null;
+      return { id, type: "playlist", provider: "youtube" };
     }
 
     return null;
@@ -43,7 +55,7 @@ export function extractMediaInfo(uri: string): MediaInfo | null {
   }
 }
 
-export async function getYouTubeMetadata(videoId: string) {
+export async function fetchYouTubeVideoInfo(videoId: string) {
   const apiKey = process.env.YOUTUBE_API_KEY;
 
   if (!apiKey) {

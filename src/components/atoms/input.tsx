@@ -10,9 +10,7 @@ export default function Input({ label, className, id, ...props }: InputProps) {
   return (
     <>
       {label && (
-        <Typography as="label" variant="bodySmall" className="mb-1">
           {label}
-        </Typography>
       )}
       <input
         id={id}

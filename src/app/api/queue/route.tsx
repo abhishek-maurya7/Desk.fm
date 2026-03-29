@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
-import { extractMediaInfo, getYouTubeMetadata } from "@/lib/server/helpers";
+import { extractMediaInfo, fetchYouTubeVideoInfo } from "@/lib/server/helpers";
 import { addNewTrack, addTrackToQueue, getLastQueueItem, getTrackById, hasRoomAccess, updateQueueStatue } from "@/lib/server/mongodb/helpers";
-import MongoClient from "@/lib/server/mongodb/client";
 
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
@@ -42,12 +41,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const trackId = mediaInfo.id;
+    const { id } = mediaInfo;
 
-    let track = await getTrackById(trackId);
+    let track = await getTrackById(id);
 
     if (!track) {
-      const metadata = await getYouTubeMetadata(trackId);
+      const metadata = await fetchYouTubeVideoInfo(id);
       if (!metadata) {
         return NextResponse.json(
           { message: "Failed to fetch metadata" },
